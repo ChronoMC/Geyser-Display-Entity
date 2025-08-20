@@ -36,5 +36,5 @@ jobs:
       - name: Capture Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: "geyser-more-rows"
+          name: "geyser-display-entity"
           path: target/*.jar
