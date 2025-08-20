@@ -1,13 +1,13 @@
 
 package me.zimzaza4.geyserdisplayentity.entity;
 
+import me.zimzaza4.geyserdisplayentity.ExtensionMain;
 import me.zimzaza4.geyserdisplayentity.Settings;
 import org.cloudburstmc.math.imaginary.Quaternionf;
 import org.cloudburstmc.math.matrix.Matrix3f;
 import org.cloudburstmc.math.vector.Vector3f;
-import org.cloudburstmc.math.vector.Vector4f;
+import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataTypes;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
-import org.cloudburstmc.protocol.bedrock.packet.MoveEntityAbsolutePacket;
 import org.geysermc.geyser.entity.EntityDefinition;
 import org.geysermc.geyser.entity.type.Entity;
 import org.geysermc.geyser.session.GeyserSession;
@@ -25,6 +25,8 @@ public class SlotDisplayEntity extends Entity {
     protected float qScale = 1F;
     protected boolean validQScale = false;
     protected boolean rotationUpdated = false;
+
+    protected Settings.DisplayEntityOptions options = Settings.IMP.GENERAL;
 
     public SlotDisplayEntity(GeyserSession session, int entityId, long geyserId, UUID uuid,
                              EntityDefinition<?> definition,
@@ -55,6 +57,13 @@ public class SlotDisplayEntity extends Entity {
         propertyManager.add("geyser:s_x", scale.getX());
         propertyManager.add("geyser:s_y", scale.getY());
         propertyManager.add("geyser:s_z", scale.getZ());
+
+        if (options == null) {
+            options = Settings.IMP.GENERAL;
+        }
+        if (options.VANILLA_SCALE) {
+            applyScale();
+        }
 
         propertyManager.add("geyser:r_x", MathUtils.wrapDegrees(rotation.getX()));
         propertyManager.add("geyser:r_y", MathUtils.wrapDegrees(-rotation.getY()));
@@ -87,18 +96,28 @@ public class SlotDisplayEntity extends Entity {
 
     public void setTranslation(EntityMetadata<Vector3f, ?> entityMetadata) {
         this.translation = entityMetadata.getValue();
-
         propertyManager.add("geyser:t_x", translation.getX() * 10);
         propertyManager.add("geyser:t_y", translation.getY() * 10);
         propertyManager.add("geyser:t_z", translation.getZ() * 10);
     }
 
     public void setScale(EntityMetadata<Vector3f, ?> entityMetadata) {
+
         this.scale = entityMetadata.getValue();
 
+        if (options.VANILLA_SCALE) {
+            applyScale();
+        }
         propertyManager.add("geyser:s_x", scale.getX());
         propertyManager.add("geyser:s_y", scale.getY());
         propertyManager.add("geyser:s_z", scale.getZ());
+    }
+
+
+    protected void applyScale() {
+        Vector3f vector3f = this.scale;
+        float scale = (vector3f.getX() + vector3f.getY() + vector3f.getZ()) / 3;
+        this.dirtyMetadata.put(EntityDataTypes.SCALE, scale);
     }
 
     public void setLeftRotation(EntityMetadata<Quaternionf, ?> entityMetadata) {
